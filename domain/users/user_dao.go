@@ -3,6 +3,8 @@ package users
 import (
 	"fmt"
 
+	"github.com/criotech/bookstore_users_api/datasources/mysql/users_db"
+	"github.com/criotech/bookstore_users_api/utils/date_utils"
 	"github.com/criotech/bookstore_users_api/utils/errors"
 )
 
@@ -11,6 +13,9 @@ var (
 )
 
 func (user *User) Get() *errors.RestErr {
+	if err := users_db.Client.Ping(); err != nil {
+		panic(err)
+	}
 	result := usersDB[user.Id]
 	if result == nil {
 		return errors.NewBadRequestError(fmt.Sprintf("user %d not found", user.Id))
@@ -32,6 +37,9 @@ func (user *User) Save() *errors.RestErr {
 		}
 		return errors.NewBadRequestError(fmt.Sprintf("user %d already exists", user.Id))
 	}
+
+	user.DateCreated = date_utils.GetNowString()
+
 	usersDB[user.Id] = user
 	return nil
 }
